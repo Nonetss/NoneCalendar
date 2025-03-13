@@ -40,3 +40,8 @@ func (es *EventStore) GetAllEvents() []models.Event {
 func (es *EventStore) DeleteEvent(id string) error {
 	return es.db.Delete(&models.Event{}, "id = ?", id).Error
 }
+
+// UpdateEvent actualiza un evento existente en la base de datos.
+func (es *EventStore) UpdateEvent(event *models.Event) error {
+	return es.db.Save(event).Error
+}

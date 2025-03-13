@@ -10,7 +10,7 @@ import (
 
 // Event representa un evento en el calendario.
 type Event struct {
-	ID          string    `json:"id" gorm:"type:uuid;primaryKey"` // ID ahora es un UUID
+	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	StartTime   time.Time `json:"start_time"`
