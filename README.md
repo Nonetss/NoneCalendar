@@ -12,10 +12,13 @@
 │   │   └── calendar.go
 │   ├── /models              # Estructuras de datos (como tu struct Event)
 │   │   └── event.go
+│   │   └── event_test.go
 │   ├── /services            # Lógica de negocio (generación de .ics, etc.)
 │   │   └── ics_service.go
-│   └── /utils               # Utilidades comunes (manejo de fechas, validaciones, etc.)
-│       └── date_utils.go
+│   ├── /utils               # Utilidades comunes (manejo de fechas, validaciones, etc.)
+│   │   └── date_utils.go
+│   └── /store               # Almacenamiento de eventos
+│       └── event_store.go
 │
 ├── /pkg
 │   └── /icalendar            # Paquete para generar y manipular archivos .ics
