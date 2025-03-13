@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"errors"
@@ -33,4 +33,40 @@ func (e *Event) Validate() error {
 		return errors.New("la fecha de inicio debe ser anterior a la fecha de fin")
 	}
 	return nil
+}
+
+// EventStore almacena los eventos en memoria.
+type EventStore struct {
+	events []Event
+}
+
+// NewEventStore crea una nueva instancia de EventStore.
+func NewEventStore() *EventStore {
+	return &EventStore{
+		events: []Event{},
+	}
+}
+
+// AddEvent agrega un nuevo evento al almacenamiento.
+func (es *EventStore) AddEvent(event Event) error {
+	if err := event.Validate(); err != nil {
+		return err
+	}
+	es.events = append(es.events, event)
+	return nil
+}
+
+// GetEventByID busca un evento por su ID.
+func (es *EventStore) GetEventByID(id string) (*Event, error) {
+	for _, event := range es.events {
+		if event.ID == id {
+			return &event, nil
+		}
+	}
+	return nil, errors.New("evento no encontrado")
+}
+
+// GetAllEvents devuelve todos los eventos almacenados.
+func (es *EventStore) GetAllEvents() []Event {
+	return es.events
 }
