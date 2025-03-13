@@ -17,7 +17,8 @@ func SetupHandlers(db *gorm.DB) {
 	http.HandleFunc("/events", HandleEvents)
 	http.HandleFunc("/events/", HandleEventByID)
 	http.HandleFunc("/calendar.ics", GetAllEventsICS)
-	http.HandleFunc("/events/range", HandleEventRange) // <-- Nueva ruta
+	http.HandleFunc("/events/range", HandleEventRange)
+	http.HandleFunc("/events/import", ImportEventsFromICS)
 }
 
 // HandleEvents maneja las solicitudes a /events
