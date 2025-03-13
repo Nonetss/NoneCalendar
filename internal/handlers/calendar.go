@@ -7,9 +7,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
-var eventStore = store.NewEventStore() // Instancia global de EventStore
+var eventStore *store.EventStore
+
+// Setup almacena la instancia de EventStore con la conexión DB
+func SetupHandlers(db *gorm.DB) {
+	eventStore = store.NewEventStore(db)
+}
 
 // HandleEvents maneja las solicitudes a /events
 func HandleEvents(w http.ResponseWriter, r *http.Request) {
@@ -108,4 +115,3 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Evento eliminado correctamente"))
 }
-

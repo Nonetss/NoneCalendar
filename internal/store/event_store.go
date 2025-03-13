@@ -2,78 +2,41 @@ package store
 
 import (
 	"calendar/internal/models"
-	"errors"
-	"sync"
+	"gorm.io/gorm"
 )
 
-// EventStore almacena los eventos en memoria.
+// EventStore maneja los eventos con GORM
 type EventStore struct {
-	events map[string]models.Event // Mapa para acceder rápidamente a los eventos por ID
-	mu     sync.RWMutex            // Mutex para garantizar la seguridad en concurrencia
+	db *gorm.DB
 }
 
-// NewEventStore crea una nueva instancia de EventStore.
-func NewEventStore() *EventStore {
-	return &EventStore{
-		events: make(map[string]models.Event),
-	}
+// NewEventStore crea una instancia del almacenamiento de eventos usando GORM
+func NewEventStore(db *gorm.DB) *EventStore {
+	return &EventStore{db: db}
 }
 
-// AddEvent agrega un nuevo evento al almacenamiento.
+// AddEvent almacena un nuevo evento en la base de datos
 func (es *EventStore) AddEvent(event models.Event) error {
-	es.mu.Lock()
-	defer es.mu.Unlock()
-
-	// Verificar si el evento ya existe
-	if _, exists := es.events[event.ID]; exists {
-		return errors.New("el evento ya existe")
-	}
-
-	// Agregar el evento al mapa
-	es.events[event.ID] = event
-	return nil
+	return es.db.Create(&event).Error
 }
 
-// GetEventByID busca un evento por su ID.
+// GetEventByID busca un evento por su ID
 func (es *EventStore) GetEventByID(id string) (*models.Event, error) {
-	es.mu.RLock()
-	defer es.mu.RUnlock()
-
-	// Buscar el evento en el mapa
-	event, exists := es.events[id]
-	if !exists {
-		return nil, errors.New("evento no encontrado")
+	var event models.Event
+	if err := es.db.First(&event, "id = ?", id).Error; err != nil {
+		return nil, err
 	}
-
 	return &event, nil
 }
 
-// GetAllEvents devuelve todos los eventos almacenados.
+// GetAllEvents devuelve todos los eventos almacenados
 func (es *EventStore) GetAllEvents() []models.Event {
-	es.mu.RLock()
-	defer es.mu.RUnlock()
-
-	// Crear una lista de eventos
-	events := make([]models.Event, 0, len(es.events))
-	for _, event := range es.events {
-		events = append(events, event)
-	}
-
+	var events []models.Event
+	es.db.Find(&events)
 	return events
 }
 
-// DeleteEvent elimina un evento por su ID.
+// DeleteEvent elimina un evento por su ID
 func (es *EventStore) DeleteEvent(id string) error {
-	es.mu.Lock()
-	defer es.mu.Unlock()
-
-	// Verificar si el evento existe
-	if _, exists := es.events[id]; !exists {
-		return errors.New("evento no encontrado")
-	}
-
-	// Eliminar el evento del mapa
-	delete(es.events, id)
-	return nil
+	return es.db.Delete(&models.Event{}, "id = ?", id).Error
 }
-

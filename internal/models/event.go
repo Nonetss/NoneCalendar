@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -16,6 +17,10 @@ type Event struct {
 	Location    string    `json:"location"`
 	IsAllDay    bool      `json:"is_all_day"`
 	Recurrence  string    `json:"recurrence"`
+}
+
+func AutoMigrate(db *gorm.DB) {
+	db.AutoMigrate(&Event{})
 }
 
 // Validate valida que los datos del evento sean correctos.
