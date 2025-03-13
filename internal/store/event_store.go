@@ -3,6 +3,7 @@ package store
 import (
 	"calendar/internal/models"
 	"gorm.io/gorm"
+	"time"
 )
 
 // EventStore maneja los eventos con GORM
@@ -44,4 +45,13 @@ func (es *EventStore) DeleteEvent(id string) error {
 // UpdateEvent actualiza un evento existente en la base de datos.
 func (es *EventStore) UpdateEvent(event *models.Event) error {
 	return es.db.Save(event).Error
+}
+
+// GetEventsByDateRange devuelve todos los eventos que ocurren entre dos fechas
+func (es *EventStore) GetEventsByDateRange(startDate, endDate time.Time) []models.Event {
+	var events []models.Event
+
+	es.db.Where("start_time >= ? AND end_time <= ?", startDate, endDate).Find(&events)
+
+	return events
 }

@@ -17,6 +17,7 @@ func SetupHandlers(db *gorm.DB) {
 	http.HandleFunc("/events", HandleEvents)
 	http.HandleFunc("/events/", HandleEventByID)
 	http.HandleFunc("/calendar.ics", GetAllEventsICS)
+	http.HandleFunc("/events/range", HandleEventRange) // <-- Nueva ruta
 }
 
 // HandleEvents maneja las solicitudes a /events
@@ -42,6 +43,17 @@ func HandleEventByID(w http.ResponseWriter, r *http.Request) {
 		deleteEvent(w, r)
 	case http.MethodPut:
 		updateEvent(w, r)
+	default:
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	}
+
+}
+
+// HandleEventRange maneja las solicitudes a /events/range
+func HandleEventRange(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		getEventsByDateRange(w, r)
 	default:
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
