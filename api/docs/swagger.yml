@@ -1,0 +1,211 @@
+openapi: "3.0.0"
+info:
+  title: Calendar API
+  version: "1.0.0"
+  description: API para la gestión de eventos y generación de archivos .ics
+
+servers:
+  - url: http://localhost:8020
+
+paths:
+  /events:
+    post:
+      summary: Crea un nuevo evento
+      description: Crea un nuevo evento y retorna el archivo .ics para el evento creado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "201":
+          description: Evento creado y archivo .ics generado.
+          content:
+            text/calendar:
+              schema:
+                type: string
+        "400":
+          description: Error de validación o decodificación.
+        "500":
+          description: Error interno del servidor.
+    get:
+      summary: Lista todos los eventos
+      responses:
+        "200":
+          description: Lista de eventos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /events/{id}.ics:
+    get:
+      summary: Obtiene el archivo .ics de un evento específico.
+      parameters:
+        - name: id
+          in: path
+          description: Identificador único del evento.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Archivo .ics del evento.
+          content:
+            text/calendar:
+              schema:
+                type: string
+        "404":
+          description: Evento no encontrado.
+
+  /events/{id}:
+    put:
+      summary: Actualiza un evento existente.
+      parameters:
+        - name: id
+          in: path
+          description: Identificador único del evento.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "200":
+          description: Evento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Error de validación.
+        "404":
+          description: Evento no encontrado.
+        "500":
+          description: Error interno del servidor.
+    delete:
+      summary: Elimina un evento.
+      parameters:
+        - name: id
+          in: path
+          description: Identificador único del evento.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Evento eliminado.
+        "404":
+          description: Evento no encontrado.
+
+  /calendar.ics:
+    get:
+      summary: Obtiene un archivo .ics con todos los eventos.
+      responses:
+        "200":
+          description: Archivo .ics con todos los eventos.
+          content:
+            text/calendar:
+              schema:
+                type: string
+
+  /events/range:
+    get:
+      summary: Obtiene eventos dentro de un rango de fechas.
+      parameters:
+        - name: start
+          in: query
+          description: Fecha de inicio en formato YYYY-MM-DD.
+          required: true
+          schema:
+            type: string
+        - name: end
+          in: query
+          description: Fecha de fin en formato YYYY-MM-DD.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de eventos dentro del rango.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Parámetros inválidos.
+
+  /events/import:
+    post:
+      summary: Importa eventos desde un archivo .ics.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Lista de eventos importados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Error en la solicitud.
+        "500":
+          description: Error interno del servidor.
+
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "b3e62f93-df98-4a6e-83d2-0a58f45f2a1d"
+        title:
+          type: string
+          example: "Reunión importante"
+        description:
+          type: string
+          example: "Discusión del proyecto"
+        start_time:
+          type: string
+          format: date-time
+          example: "2025-10-10T09:00:00Z"
+        end_time:
+          type: string
+          format: date-time
+          example: "2025-10-10T10:00:00Z"
+        time_zone:
+          type: string
+          example: "UTC"
+        location:
+          type: string
+          example: "Oficina Principal"
+        is_all_day:
+          type: boolean
+          example: false
+        recurrence:
+          type: string
+          example: ""
+      required:
+        - title
+        - start_time
+        - end_time
