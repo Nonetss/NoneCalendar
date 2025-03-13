@@ -30,7 +30,7 @@ func createEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Generar el archivo .ics
+	// Generar el archivo .ics (sin el segundo parámetro)
 	icsContent := icalendar.GenerateICS(event)
 
 	// Devolver el archivo .ics

@@ -84,13 +84,25 @@ func ImportEventsFromICS(w http.ResponseWriter, r *http.Request) {
 			locationVal = locProp.Value
 		}
 
-		startTime, err := parseICalTime(dtStartProp.Value)
+		// Obtenemos el TZID desde ICalParameters (forma antigua).
+		tzStartVals := dtStartProp.ICalParameters["TZID"]
+		tzEndVals := dtEndProp.ICalParameters["TZID"]
+
+		var tzStart, tzEnd string
+		if len(tzStartVals) > 0 {
+			tzStart = tzStartVals[0]
+		}
+		if len(tzEndVals) > 0 {
+			tzEnd = tzEndVals[0]
+		}
+
+		startTime, err := parseICalTimeWithZone(dtStartProp.Value, tzStart)
 		if err != nil {
 			fmt.Println("⚠️ Fecha de inicio inválida:", err)
 			continue
 		}
 
-		endTime, err := parseICalTime(dtEndProp.Value)
+		endTime, err := parseICalTimeWithZone(dtEndProp.Value, tzEnd)
 		if err != nil {
 			fmt.Println("⚠️ Fecha de fin inválida:", err)
 			continue
@@ -102,7 +114,8 @@ func ImportEventsFromICS(w http.ResponseWriter, r *http.Request) {
 			Location:    locationVal,
 			StartTime:   startTime,
 			EndTime:     endTime,
-			IsAllDay:    isAllDayEvent(startTime, endTime),
+			// Ajusta si usas IsAllDay
+			// IsAllDay:    isAllDayEvent(startTime, endTime),
 		}
 
 		if err := store.DB.Create(&newEvent).Error; err != nil {
@@ -119,20 +132,34 @@ func ImportEventsFromICS(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(importedEvents)
 }
 
-// parseICalTime convierte una fecha de iCalendar a time.Time.
-func parseICalTime(value string) (time.Time, error) {
-	layouts := []string{"20060102T150405Z", "20060102T150405", "20060102"}
+// parseICalTimeWithZone parsea la fecha de iCalendar usando la zona horaria (TZID) si se define en la propiedad.
+//
+//   - value: El valor de la propiedad (ej. "20250224T172000")
+//   - tzID:  El string que figure en el parámetro TZID (ej. "Europe/Madrid") si está definido.
+//     Si no hay TZID se asume UTC.
+func parseICalTimeWithZone(value, tzID string) (time.Time, error) {
+	loc := time.UTC
+	if tzID != "" {
+		tmp, err := time.LoadLocation(tzID)
+		if err == nil {
+			loc = tmp
+		}
+	}
+
+	// Varios formatos posibles
+	layouts := []string{
+		"20060102T150405Z", // con Z (UTC)
+		"20060102T150405",  // sin Z
+		"20060102",         // sólo fecha
+	}
+
+	var parseErr error
 	for _, layout := range layouts {
-		t, err := time.Parse(layout, value)
+		t, err := time.ParseInLocation(layout, value, loc)
 		if err == nil {
 			return t, nil
 		}
+		parseErr = err
 	}
-	return time.Time{}, fmt.Errorf("error al parsear fecha: %s", value)
-}
-
-// isAllDayEvent verifica si un evento dura todo el día basándose en las horas de inicio y fin.
-func isAllDayEvent(start, end time.Time) bool {
-	return start.Hour() == 0 && start.Minute() == 0 && start.Second() == 0 &&
-		end.Hour() == 0 && end.Minute() == 0 && end.Second() == 0
+	return time.Time{}, fmt.Errorf("no se pudo parsear '%s' (TZID=%s): %v", value, tzID, parseErr)
 }
