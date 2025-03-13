@@ -2,13 +2,15 @@ package models
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Event representa un evento en el calendario.
 type Event struct {
-	ID          string    `json:"id"`
+	ID          string    `json:"id" gorm:"type:uuid;primaryKey"` // ID ahora es un UUID
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	StartTime   time.Time `json:"start_time"`
@@ -19,8 +21,11 @@ type Event struct {
 	Recurrence  string    `json:"recurrence"`
 }
 
-func AutoMigrate(db *gorm.DB) {
-	db.AutoMigrate(&Event{})
+func (e *Event) BeforeCreate(tx *gorm.DB) (err error) {
+	if e.ID == "" {
+		e.ID = uuid.New().String()[:8] // Generar un ID más corto
+	}
+	return
 }
 
 // Validate valida que los datos del evento sean correctos.

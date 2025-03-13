@@ -50,13 +50,16 @@ func createEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generar ID automáticamente si no viene en la petición
+	event.ID = "" // Esto asegurará que `BeforeCreate()` de GORM genere el UUID automáticamente.
+
 	// Validar el evento
 	if err := event.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Almacenar el evento
+	// Almacenar el evento en la base de datos
 	if err := eventStore.AddEvent(event); err != nil {
 		http.Error(w, "Error al almacenar el evento", http.StatusInternalServerError)
 		return
