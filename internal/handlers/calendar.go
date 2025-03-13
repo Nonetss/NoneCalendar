@@ -40,6 +40,8 @@ func HandleEventByID(w http.ResponseWriter, r *http.Request) {
 		getEventICS(w, r)
 	case http.MethodDelete:
 		deleteEvent(w, r)
+	case http.MethodPut:
+		updateEvent(w, r)
 	default:
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
