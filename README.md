@@ -1,4 +1,4 @@
-# Estructura del proyecto:
+# Estructura de carpetas dentro del proyecto:
 
 ```
 /calendar
@@ -39,3 +39,34 @@
 ├── go.sum                    # Archivo de sumas de verificación de Go
 └── README.md                 # Documentación del proyecto
 ```
+
+---
+
+# Endpoint API:
+
+1. **`POST /events`**:
+
+   - **Descripción**: Crea un nuevo evento.
+   - **Entrada**: Un JSON con la estructura de `Event`.
+   - **Salida**: Un archivo `.ics` que representa el evento creado.
+   - **Uso**: El cliente envía los datos del evento y recibe el archivo `.ics` para descargar.
+
+2. **`GET /events/{id}.ics`**:
+
+   - **Descripción**: Obtiene un archivo `.ics` para un evento específico.
+   - **Entrada**: El `id` del evento.
+   - **Salida**: Un archivo `.ics` que representa el evento.
+   - **Uso**: El cliente puede descargar el archivo `.ics` para importarlo en Google Calendar.
+
+3. **`GET /events`**:
+
+   - **Descripción**: Obtiene una lista de todos los eventos.
+   - **Entrada**: Ninguna.
+   - **Salida**: Un JSON con la lista de eventos.
+   - **Uso**: Para ver todos los eventos creados.
+
+4. **`DELETE /events/{id}`**:
+   - **Descripción**: Elimina un evento específico.
+   - **Entrada**: El `id` del evento.
+   - **Salida**: Un mensaje de confirmación.
+   - **Uso**: Para eliminar eventos que ya no son necesarios.
