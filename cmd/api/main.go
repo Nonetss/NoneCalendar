@@ -26,10 +26,6 @@ func main() {
 	handlers.SetupHandlers(store.DB)
 
 	// Iniciar el servidor
-	http.HandleFunc("/events", handlers.HandleEvents)
-	http.HandleFunc("/events/", handlers.HandleEventByID)
-	http.HandleFunc("/calendar.ics", handlers.GetAllEventsICS) // <-- Nuevo endpoint
-
 	fmt.Println("🚀 Servidor corriendo en http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
